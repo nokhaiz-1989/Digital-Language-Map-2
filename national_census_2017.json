@@ -1,0 +1,45 @@
+{
+  "total_population": 207684626,
+  "languages": {
+    "URDU": {
+      "count": 14706159,
+      "pct": 7.08
+    },
+    "PUNJABI": {
+      "count": 80536390,
+      "pct": 38.78
+    },
+    "SINDHI": {
+      "count": 30256372,
+      "pct": 14.57
+    },
+    "PUSHTO": {
+      "count": 37885441,
+      "pct": 18.24
+    },
+    "BALOCHI": {
+      "count": 6281087,
+      "pct": 3.02
+    },
+    "KASHMIRI": {
+      "count": 359669,
+      "pct": 0.17
+    },
+    "SARAIKI": {
+      "count": 25324637,
+      "pct": 12.19
+    },
+    "HINDKO": {
+      "count": 5065879,
+      "pct": 2.44
+    },
+    "BRAHVI": {
+      "count": 2567677,
+      "pct": 1.24
+    },
+    "OTHERS": {
+      "count": 4701315,
+      "pct": 2.26
+    }
+  }
+}
