@@ -63,28 +63,40 @@ st.markdown(
 
     /* Sidebar */
     section[data-testid="stSidebar"] {
-        background-color: #0f172a;
+        background-color: #f8fafc;
+        border-right: 1px solid #e2e8f0;
     }
     section[data-testid="stSidebar"] * {
-        color: #e2e8f0 !important;
+        color: #334155 !important;
     }
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] .stMarkdown p strong {
-        color: #f8fafc !important;
+    section[data-testid="stSidebar"] h2 {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        font-size: 20px !important;
+        letter-spacing: -0.3px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 4px !important;
     }
     section[data-testid="stSidebar"] hr {
-        border-color: #334155;
+        border-color: #e2e8f0;
+    }
+    section[data-testid="stSidebar"] .stTextInput input {
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
     }
 
     /* Sidebar section headers */
     .sidebar-section {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #94a3b8 !important;
-        margin-top: 18px;
-        margin-bottom: 6px;
+        letter-spacing: 0.08em;
+        color: #64748b !important;
+        margin-top: 20px;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     /* Metric cards */
@@ -132,11 +144,11 @@ st.markdown(
     <p>Explore Pakistan's linguistic diversity and Sufi heritage through an interactive map.</p>
     <p style="margin-bottom:6px;"><strong>This digital atlas connects:</strong></p>
     <ul>
-        <li>🗣️ Languages</li>
-        <li>👥 Speaker populations</li>
-        <li>⚠️ Endangerment status</li>
-        <li>🕌 Historical Sufi poets</li>
-        <li>🗺️ Cultural geography</li>
+        <li>Languages</li>
+        <li>Speaker populations</li>
+        <li>Endangerment status</li>
+        <li>Historical Sufi poets</li>
+        <li>Cultural geography</li>
     </ul>
     </div>
     """,
@@ -352,31 +364,37 @@ poets = poets.dropna(subset=["Latitude", "Longitude"])
 # SIDEBAR FILTERS
 # -------------------------------
 
-st.sidebar.markdown("## 🔎 Explore Atlas")
+st.sidebar.markdown("## Explore Atlas")
 
 st.sidebar.markdown("<div class='sidebar-section'>Language Category</div>", unsafe_allow_html=True)
-all_categories = sorted(languages["Category"].dropna().unique())
+main_categories = ["National", "Regional"]
+available_categories = [c for c in main_categories if c in languages["Category"].unique()]
 category_filter = st.sidebar.pills(
     "Language Category",
-    all_categories,
+    available_categories,
     selection_mode="multi",
-    default=all_categories,
+    default=available_categories,
     label_visibility="collapsed"
 )
 
-st.sidebar.markdown("<div class='sidebar-section'>Endangerment Status</div>", unsafe_allow_html=True)
-all_statuses = sorted(languages["Endangerment_Status"].dropna().unique())
-status_filter = st.sidebar.pills(
-    "Endangerment Status",
-    all_statuses,
+# Endangered-category languages live on their own dedicated tab now.
+endangered_languages = languages[languages["Category"] == "Endangered"].copy()
+languages = languages[languages["Category"] != "Endangered"]
+
+languages = languages[languages["Category"].isin(category_filter)]
+
+st.sidebar.markdown("<div class='sidebar-section'>Endangerment Severity</div>", unsafe_allow_html=True)
+all_severities = sorted(endangered_languages["Endangerment_Status"].dropna().unique())
+severity_filter = st.sidebar.pills(
+    "Endangerment Severity",
+    all_severities,
     selection_mode="multi",
-    default=all_statuses,
+    default=all_severities,
     label_visibility="collapsed"
 )
 
-languages = languages[
-    (languages["Category"].isin(category_filter)) &
-    (languages["Endangerment_Status"].isin(status_filter))
+endangered_languages = endangered_languages[
+    endangered_languages["Endangerment_Status"].isin(severity_filter)
 ]
 
 st.sidebar.markdown("<div class='sidebar-section'>Search Language</div>", unsafe_allow_html=True)
@@ -403,13 +421,25 @@ if search_poet:
         poets["Name"].str.contains(search_poet, case=False, na=False)
     ]
 
+st.sidebar.markdown("<div class='sidebar-section'>Search Endangered Languages</div>", unsafe_allow_html=True)
+search_endangered = st.sidebar.text_input(
+    "Search Endangered Language",
+    placeholder="e.g. Kalasha, Domaaki...",
+    label_visibility="collapsed"
+)
+
+if search_endangered:
+    endangered_languages = endangered_languages[
+        endangered_languages["Language"].str.contains(search_endangered, case=False, na=False)
+    ]
+
 st.sidebar.caption(
-    "Filters above apply to the Languages map and Sufi Poets search "
-    "respectively — the two maps are shown on separate tabs."
+    "Filters above apply to their matching tab — Languages, Sufi Poets, "
+    "and Endangered Languages are shown separately."
 )
 
 st.sidebar.markdown("---")
-st.sidebar.caption("🇵🇰 Pakistan Cultural & Linguistic Atlas")
+st.sidebar.caption("Pakistan Cultural & Linguistic Atlas")
 
 
 # -------------------------------
@@ -421,6 +451,16 @@ language_colors = {
     "Regional": "blue",
     "Endangered": "red"
 }
+
+# Endangerment severity color scale, used on the Endangered Languages tab
+# map markers and its legend.
+severity_colors = {
+    "Vulnerable": "#fbbf24",
+    "Definitely Endangered": "#fb923c",
+    "Severely Endangered": "#ef4444",
+    "Critically Endangered": "#7f1d1d",
+}
+severity_order = ["Vulnerable", "Definitely Endangered", "Severely Endangered", "Critically Endangered"]
 
 chart_template = "plotly_white"
 color_sequence = px.colors.qualitative.Set2
@@ -446,7 +486,7 @@ def add_pakistan_boundary(map_obj):
     if pakistan_boundary:
         folium.GeoJson(
             pakistan_boundary,
-            name="🇵🇰 Pakistan Boundary",
+            name="Pakistan Boundary",
             style_function=lambda feature: base_style,
             highlight_function=lambda feature: base_highlight,
         ).add_to(map_obj)
@@ -454,7 +494,7 @@ def add_pakistan_boundary(map_obj):
     if kashmir_boundary:
         folium.GeoJson(
             kashmir_boundary,
-            name="🗺️ Kashmir Region (Approximate Boundary)",
+            name="Kashmir Region (Approximate Boundary)",
             style_function=lambda feature: base_style,
             highlight_function=lambda feature: base_highlight,
             tooltip="Kashmir Region — approximate boundary",
@@ -465,7 +505,9 @@ def add_pakistan_boundary(map_obj):
 # TABS: LANGUAGES vs SUFI POETS
 # -------------------------------
 
-lang_tab, poet_tab = st.tabs(["🗣️ Languages Map", "🕌 Sufi Poets Map"])
+lang_tab, endangered_tab, poet_tab = st.tabs(
+    ["Languages Map", "Endangered Languages", "Sufi Poets Map"]
+)
 
 
 # ===============================
@@ -486,7 +528,7 @@ with lang_tab:
 
     national_census = load_national_census()
 
-    language_group = folium.FeatureGroup(name="🗣️ Languages")
+    language_group = folium.FeatureGroup(name="Languages")
 
     for _, row in languages.iterrows():
 
@@ -526,7 +568,7 @@ with lang_tab:
 
     # --- Language distribution choropleth ---
     st.divider()
-    st.markdown("#### 🗺️ Language Distribution by Province")
+    st.markdown("#### Language Distribution by Province")
     st.caption(
         "Select a language to see which provinces it is spoken in. "
         "Shading reflects that language's total speaker count wherever it appears "
@@ -592,7 +634,7 @@ with lang_tab:
 
     # --- District-level census choropleth (2017 PBS data) ---
     st.divider()
-    st.markdown("#### 🏘️ District Map — Official 2017 Census")
+    st.markdown("#### District Map — Official 2017 Census")
     st.caption(
         "Pakistan Bureau of Statistics 2017 census, mother-tongue data by administrative "
         "division. This is the finest resolution PBS publicly released for language — "
@@ -677,7 +719,7 @@ with lang_tab:
 
 
     st.divider()
-    st.markdown("#### 📊 Language Statistics")
+    st.markdown("#### Language Statistics")
 
     col1, col2 = st.columns(2)
 
@@ -688,22 +730,117 @@ with lang_tab:
         total_speakers = languages["Speakers"].sum()
         st.metric("Total Speakers", f"{int(total_speakers):,}")
 
-    if len(languages) > 0:
-        fig = px.pie(
-            languages,
-            names="Category",
-            title="Languages by Category",
+
+# ===============================
+# ENDANGERED LANGUAGES TAB
+# ===============================
+
+with endangered_tab:
+
+    st.subheader("Endangered Languages of Pakistan")
+    st.caption(
+        "Languages classified as endangered, shown with severity-based coloring "
+        "on both the map and chart below."
+    )
+
+    endangered_map = folium.Map(
+        location=[30.3753, 69.3451],
+        zoom_start=5,
+        tiles="CartoDB positron"
+    )
+
+    add_pakistan_boundary(endangered_map)
+
+    endangered_group = folium.FeatureGroup(name="Endangered Languages")
+
+    for _, row in endangered_languages.iterrows():
+
+        marker_color = severity_colors.get(row["Endangerment_Status"], "#7f1d1d")
+
+        popup = f"""
+        <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; min-width:220px;">
+            <h4 style="margin-bottom:6px; color:#0f172a;">{row['Language']}</h4>
+            <b>Family:</b> {row['Family']}<br>
+            <b>Province:</b> {row['Province']}<br>
+            <b>Speakers:</b> {int(row['Speakers']):,}<br>
+            <b>Script:</b> {row['Script']}<br>
+            <b>Endangerment Status:</b> {row['Endangerment_Status']}<br>
+            <p style="margin-top:8px; color:#475569;">{row['Description']}</p>
+        </div>
+        """
+
+        folium.CircleMarker(
+            location=[row["Latitude"], row["Longitude"]],
+            radius=max(5, min(16, row["Speakers"] / 20000)) if row["Speakers"] > 0 else 5,
+            color=marker_color,
+            fill=True,
+            fill_color=marker_color,
+            fill_opacity=0.8,
+            popup=folium.Popup(popup, max_width=350)
+        ).add_to(endangered_group)
+
+    endangered_group.add_to(endangered_map)
+    folium.LayerControl(collapsed=False).add_to(endangered_map)
+
+    st_folium(endangered_map, width=1200, height=600, key="endangered_map")
+
+    # --- Legend ---
+    legend_html = "".join(
+        f"""
+        <span style="display:inline-flex; align-items:center; margin-right:18px; font-size:14px; color:#334155;">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:50%;
+                         background-color:{severity_colors[status]}; margin-right:6px;"></span>
+            {status}
+        </span>
+        """
+        for status in severity_order
+    )
+    st.markdown(
+        f"""
+        <div style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
+                    padding:12px 16px; margin-top:10px;">
+            <span style="font-size:12px; font-weight:700; text-transform:uppercase;
+                         letter-spacing:0.06em; color:#64748b; margin-right:14px;">Legend</span>
+            {legend_html}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # --- Endangered language statistics ---
+    st.divider()
+    st.markdown("#### Endangered Language Statistics")
+
+    st.metric("Endangered Languages Displayed", len(endangered_languages))
+
+    if len(endangered_languages) > 0:
+        severity_counts = (
+            endangered_languages["Endangerment_Status"]
+            .value_counts()
+            .reindex(severity_order)
+            .dropna()
+            .reset_index()
+        )
+        severity_counts.columns = ["Endangerment_Status", "Count"]
+
+        fig_severity = px.bar(
+            severity_counts,
+            x="Endangerment_Status",
+            y="Count",
+            title="Endangered Languages by Severity",
             template=chart_template,
-            color_discrete_sequence=color_sequence,
-            hole=0.4
+            color="Endangerment_Status",
+            color_discrete_map=severity_colors,
+            category_orders={"Endangerment_Status": severity_order}
         )
-        fig.update_traces(textposition="outside", textinfo="percent+label")
-        fig.update_layout(
+        fig_severity.update_layout(
             title_font_size=18,
+            showlegend=False,
             margin=dict(t=60, b=20, l=20, r=20),
-            legend_title_text="Category"
+            xaxis_title="",
+            yaxis_title="Number of Languages"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig_severity, use_container_width=True)
 
 
 # ===============================
@@ -722,7 +859,7 @@ with poet_tab:
 
     add_pakistan_boundary(poet_map)
 
-    poet_group = folium.FeatureGroup(name="🕌 Sufi Poets")
+    poet_group = folium.FeatureGroup(name="Sufi Poets")
 
     for _, row in poets.iterrows():
 
@@ -752,7 +889,7 @@ with poet_tab:
 
     # --- Poet statistics ---
     st.divider()
-    st.markdown("#### 📊 Sufi Poet Statistics")
+    st.markdown("#### Sufi Poet Statistics")
 
     st.metric("Sufi Poets Displayed", len(poets))
 
