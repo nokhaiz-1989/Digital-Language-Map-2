@@ -3,6 +3,7 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import json
 import os
@@ -361,98 +362,34 @@ poets = poets.dropna(subset=["Latitude", "Longitude"])
 
 
 # -------------------------------
-# SIDEBAR FILTERS
+# TAB NAMES (defined once, reused for both the sidebar list and st.tabs())
+# -------------------------------
+
+TAB_NAMES = [
+    "Overview", "Provinces", "Districts", "Mother Tongue Speakers",
+    "All Languages", "Endangered Languages", "Cultural Map"
+]
+
+
+# -------------------------------
+# SIDEBAR — simple tab overview, no filters
 # -------------------------------
 
 st.sidebar.markdown("## Explore Atlas")
 
-st.sidebar.markdown("<div class='sidebar-section'>Language Category</div>", unsafe_allow_html=True)
-main_categories = ["National", "Regional"]
-available_categories = [c for c in main_categories if c in languages["Category"].unique()]
-category_filter = st.sidebar.pills(
-    "Language Category",
-    available_categories,
-    selection_mode="multi",
-    default=available_categories,
-    label_visibility="collapsed"
-)
-
-# Endangered-category languages live on their own dedicated tab now.
-endangered_languages = languages[languages["Category"] == "Endangered"].copy()
-languages = languages[languages["Category"] != "Endangered"]
-
-languages = languages[languages["Category"].isin(category_filter)]
-
-st.sidebar.markdown("<div class='sidebar-section'>Endangerment Severity</div>", unsafe_allow_html=True)
-all_severities = sorted(endangered_languages["Endangerment_Status"].dropna().unique())
-severity_filter = st.sidebar.pills(
-    "Endangerment Severity",
-    all_severities,
-    selection_mode="multi",
-    default=all_severities,
-    label_visibility="collapsed"
-)
-
-endangered_languages = endangered_languages[
-    endangered_languages["Endangerment_Status"].isin(severity_filter)
-]
-
-st.sidebar.markdown("<div class='sidebar-section'>Search Language</div>", unsafe_allow_html=True)
-search_language = st.sidebar.text_input(
-    "Search Language",
-    placeholder="e.g. Punjabi, Balochi...",
-    label_visibility="collapsed"
-)
-
-if search_language:
-    languages = languages[
-        languages["Language"].str.contains(search_language, case=False, na=False)
-    ]
-
-st.sidebar.markdown("<div class='sidebar-section'>Cultural Site Category</div>", unsafe_allow_html=True)
-all_culture_categories = sorted(poets["Category"].dropna().unique()) if "Category" in poets.columns else []
-culture_category_filter = st.sidebar.pills(
-    "Cultural Site Category",
-    all_culture_categories,
-    selection_mode="multi",
-    default=all_culture_categories,
-    label_visibility="collapsed"
-) if all_culture_categories else []
-
-if all_culture_categories:
-    poets = poets[poets["Category"].isin(culture_category_filter)]
-
-st.sidebar.markdown("<div class='sidebar-section'>Search Cultural Map</div>", unsafe_allow_html=True)
-search_poet = st.sidebar.text_input(
-    "Search Cultural Site",
-    placeholder="e.g. Bulleh Shah, Rehman Baba...",
-    label_visibility="collapsed"
-)
-
-if search_poet:
-    poets = poets[
-        poets["Name"].str.contains(search_poet, case=False, na=False)
-    ]
-
-st.sidebar.markdown("<div class='sidebar-section'>Search Endangered Languages</div>", unsafe_allow_html=True)
-search_endangered = st.sidebar.text_input(
-    "Search Endangered Language",
-    placeholder="e.g. Kalasha, Domaaki...",
-    label_visibility="collapsed"
-)
-
-if search_endangered:
-    endangered_languages = endangered_languages[
-        endangered_languages["Language"].str.contains(search_endangered, case=False, na=False)
-    ]
-
-st.sidebar.caption(
-    "Filters above apply to their matching tab — Languages, Cultural Map, "
-    "and Endangered Languages are shown separately."
+st.sidebar.markdown(
+    "<ul style='padding-left:20px; margin-top:8px;'>"
+    + "".join(f"<li style='margin-bottom:8px; font-size:15px; color:#334155;'>{name}</li>" for name in TAB_NAMES)
+    + "</ul>",
+    unsafe_allow_html=True
 )
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Pakistan Cultural & Linguistic Atlas")
+
+# Endangered-category languages live on their own dedicated tab.
+endangered_languages = languages[languages["Category"] == "Endangered"].copy()
+languages = languages[languages["Category"] != "Endangered"]
 
 
 # -------------------------------
@@ -514,14 +451,34 @@ def add_pakistan_boundary(map_obj):
         ).add_to(map_obj)
 
 
+def add_kashmir_outline_to_choropleth(fig):
+    """Overlay the Kashmir region boundary as a line on top of a Plotly
+    choropleth figure, so it's visible on the Provinces/Districts maps too —
+    consistent with the folium maps elsewhere in the app."""
+    if not kashmir_boundary:
+        return fig
+
+    coords = kashmir_boundary["features"][0]["geometry"]["coordinates"][0]
+    lons = [pt[0] for pt in coords]
+    lats = [pt[1] for pt in coords]
+
+    fig.add_trace(go.Scattergeo(
+        lon=lons,
+        lat=lats,
+        mode="lines",
+        line=dict(color="#006d2c", width=2),
+        name="Kashmir Region (Approximate Boundary)",
+        hoverinfo="name",
+        showlegend=False
+    ))
+    return fig
+
+
 # -------------------------------
 # TABS: OVERVIEW -> PROVINCES -> DISTRICTS -> SPEAKERS -> LANGUAGES -> ENDANGERED -> POETS
 # -------------------------------
 
-overview_tab, province_tab, district_tab, speakers_tab, lang_tab, endangered_tab, poet_tab = st.tabs(
-    ["Overview", "Provinces", "Districts", "Mother Tongue Speakers",
-     "All Languages", "Endangered Languages", "Cultural Map"]
-)
+overview_tab, province_tab, district_tab, speakers_tab, lang_tab, endangered_tab, poet_tab = st.tabs(TAB_NAMES)
 
 full_languages, _ = load_data()
 full_languages["Speakers"] = pd.to_numeric(full_languages["Speakers"], errors="coerce").fillna(0)
@@ -638,6 +595,7 @@ with province_tab:
             hover_data={"Speakers": ":,"}
         )
         fig_choropleth.update_traces(marker_line_color="#94a3b8", marker_line_width=1)
+        fig_choropleth = add_kashmir_outline_to_choropleth(fig_choropleth)
         fig_choropleth.update_geos(fitbounds="locations", visible=False)
         fig_choropleth.update_layout(
             margin=dict(t=10, b=10, l=10, r=10),
@@ -736,6 +694,7 @@ with district_tab:
             hover_data={"Division": True, "Percentage_display": ":.2f"}
         )
         fig_district.update_traces(marker_line_color="#94a3b8", marker_line_width=0.6)
+        fig_district = add_kashmir_outline_to_choropleth(fig_district)
         fig_district.update_geos(fitbounds="locations", visible=False)
         fig_district.update_layout(
             margin=dict(t=10, b=10, l=10, r=10),
