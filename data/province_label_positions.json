@@ -1,0 +1,22 @@
+{
+  "Punjab": {
+    "lon": 72.3114,
+    "lat": 30.8692
+  },
+  "Sindh": {
+    "lon": 68.7693,
+    "lat": 26.1803
+  },
+  "Khyber Pakhtunkhwa": {
+    "lon": 72.4477,
+    "lat": 34.0784
+  },
+  "Balochistan": {
+    "lon": 65.7001,
+    "lat": 28.4908
+  },
+  "Azad Kashmir": {
+    "lon": 73.8822,
+    "lat": 33.9662
+  }
+}
