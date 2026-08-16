@@ -26,19 +26,7 @@ st.set_page_config(
 
 st.markdown(
     """
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
-    .material-symbols-outlined {
-        font-family: 'Material Symbols Outlined';
-        font-weight: normal;
-        font-style: normal;
-        display: inline-block;
-        line-height: 1;
-        white-space: nowrap;
-        word-wrap: normal;
-        direction: ltr;
-    }
     /* Overall page */
     .main {
         background-color: #fafafa;
@@ -274,16 +262,17 @@ def load_provinces_geojson():
 
 
 @st.cache_data
-def load_5_provinces_geojson():
-    """Load the simplified 5-province boundary file used on the Overview page
-    (Punjab, Sindh, KP, Balochistan, Azad Kashmir)."""
+def load_overview_regions_geojson():
+    """Load the simplified region boundary file used on the Overview page
+    (Punjab, Sindh, KP, Balochistan, Azad Kashmir, Gilgit-Baltistan) — a
+    complete picture of the country, not just the four provinces."""
     base_path = os.path.dirname(__file__)
-    province_file = os.path.join(base_path, "data", "pakistan_5_provinces.geojson")
+    region_file = os.path.join(base_path, "data", "pakistan_6_provinces.geojson")
 
-    if not os.path.exists(province_file):
+    if not os.path.exists(region_file):
         return None
 
-    with open(province_file, "r", encoding="utf-8") as f:
+    with open(region_file, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -592,30 +581,31 @@ if current_page == "Overview":
         "based on the 2017 Census of Pakistan."
     )
 
-    provinces_5_geojson = load_5_provinces_geojson()
+    provinces_6_geojson = load_overview_regions_geojson()
     province_population = load_province_population()
     label_positions = load_province_label_positions()
 
-    if provinces_5_geojson is None or province_population is None:
+    if provinces_6_geojson is None or province_population is None:
         st.info(
-            "Province summary files not found. Add `data/pakistan_5_provinces.geojson` "
+            "Region summary files not found. Add `data/pakistan_6_provinces.geojson` "
             "and `data/province_population_2017.json` to your repo to enable this view."
         )
     else:
-        province_names = [f["properties"]["Province"] for f in provinces_5_geojson["features"]]
+        province_names = [f["properties"]["Province"] for f in provinces_6_geojson["features"]]
         province_color_map = {
             "Punjab": "#3b82f6",
             "Sindh": "#f97316",
             "Khyber Pakhtunkhwa": "#2dd4bf",
             "Balochistan": "#a78bfa",
             "Azad Kashmir": "#7dd3fc",
+            "Gilgit-Baltistan": "#c4b5fd",
         }
 
         map_df = pd.DataFrame({"Province": province_names})
 
         fig_overview = px.choropleth(
             map_df,
-            geojson=provinces_5_geojson,
+            geojson=provinces_6_geojson,
             locations="Province",
             featureidkey="properties.Province",
             color="Province",
@@ -625,7 +615,8 @@ if current_page == "Overview":
         fig_overview.update_traces(marker_line_color="#ffffff", marker_line_width=1.5)
         fig_overview.update_geos(fitbounds="locations", visible=False)
 
-        # Province name labels directly on the map
+        # Province/region name labels directly on the map, hand-positioned
+        # to avoid overlap in the tightly-packed north (KP / AJK / GB).
         label_lons = [label_positions[p]["lon"] for p in province_names if p in label_positions]
         label_lats = [label_positions[p]["lat"] for p in province_names if p in label_positions]
         label_text = [
@@ -637,17 +628,16 @@ if current_page == "Overview":
             lat=label_lats,
             mode="text",
             text=label_text,
-            textfont=dict(size=12, color="#0f172a", family="-apple-system, Segoe UI, sans-serif"),
+            textfont=dict(size=11, color="#0f172a", family="-apple-system, Segoe UI, sans-serif"),
             showlegend=False,
             hoverinfo="skip"
         ))
 
         fig_overview.update_layout(
-            title=dict(text="Provinces of Pakistan", font=dict(size=16, color="#0f172a"), x=0.02),
-            margin=dict(t=50, b=10, l=10, r=10),
-            legend=dict(title="Provinces", orientation="v", yanchor="bottom", y=0.02, xanchor="right", x=0.98,
+            margin=dict(t=10, b=10, l=10, r=10),
+            legend=dict(title="Regions", orientation="v", yanchor="bottom", y=0.02, xanchor="right", x=0.98,
                         bgcolor="rgba(255,255,255,0.9)", bordercolor="#e2e8f0", borderwidth=1),
-            height=520
+            height=560
         )
 
         st.plotly_chart(fig_overview, use_container_width=True)
@@ -662,11 +652,11 @@ if current_page == "Overview":
         total_languages = len(full_languages)
 
         stat_cards = [
-            ("groups", "Total Population", f"{national['Total']:,}", None, "#2563eb"),
-            ("man", "Men", f"{national['Male']:,}", f"{male_pct}%", "#2563eb"),
-            ("woman", "Women", f"{national['Female']:,}", f"{female_pct}%", "#db2777"),
-            ("transgender", "Transgender", f"{national['Transgender']:,}", f"{trans_pct}%", "#16a34a"),
-            ("forum", "Total Languages Spoken", str(total_languages), None, "#0f172a"),
+            ("👥", "Total Population", f"{national['Total']:,}", None, "#2563eb"),
+            ("👨", "Men", f"{national['Male']:,}", f"{male_pct}%", "#2563eb"),
+            ("👩", "Women", f"{national['Female']:,}", f"{female_pct}%", "#db2777"),
+            ("⚧", "Transgender", f"{national['Transgender']:,}", f"{trans_pct}%", "#16a34a"),
+            ("💬", "Total Languages Spoken", str(total_languages), None, "#0f172a"),
         ]
 
         cols = st.columns(5)
@@ -676,9 +666,7 @@ if current_page == "Overview":
                 st.markdown(
                     f"""
                     <div class="stat-card">
-                        <div class="stat-icon" style="color:{color};">
-                            <span class="material-symbols-outlined" style="font-size:26px; vertical-align:middle;">{icon}</span>
-                        </div>
+                        <div class="stat-icon" style="color:{color}; font-size:26px;">{icon}</div>
                         <div class="stat-label">{label}</div>
                         <div class="stat-value">{value}</div>
                         {sub_html}
@@ -728,13 +716,15 @@ if current_page == "Overview":
             "Men/Women/Transgender for Azad Jammu & Kashmir are not shown — that figure comes from the "
             "AJK Bureau of Statistics' separate 2017 census, which was not broken down by sex in the "
             "source used here. Khyber Pakhtunkhwa includes the former FATA, merged into KP in 2018. "
-            "Percentages are of the five regions shown in this table."
+            "Percentages are of the five regions shown in this table. Gilgit-Baltistan is shown on the "
+            "map above for a complete picture of the country, but isn't included in this table since a "
+            "harmonized population figure for it wasn't available in the sources used here."
         )
 
         st.markdown(
             """
             <div class="info-callout">
-                <span class="material-symbols-outlined" style="font-size:20px; color:#2563eb;">info</span>
+                <span style="font-size:18px;">ℹ️</span>
                 <span>Pakistan is home to a rich linguistic diversity. These languages belong to several
                 families, including Indo-Aryan, Iranian, Dravidian, Turkic, and Tibetic, among others.</span>
             </div>
