@@ -762,20 +762,35 @@ if current_page == "Overview":
         fig_overview.update_traces(marker_line_color="#ffffff", marker_line_width=1.5)
         fig_overview.update_geos(fitbounds="locations", visible=False)
 
-        # Province/region name labels directly on the map, hand-positioned
-        # to avoid overlap in the tightly-packed north (KP / AJK / GB).
-        label_lons = [label_positions[p]["lon"] for p in province_names if p in label_positions]
-        label_lats = [label_positions[p]["lat"] for p in province_names if p in label_positions]
-        label_text = [
-            "Azad Jammu &<br>Kashmir" if p == "Azad Kashmir" else p
-            for p in province_names if p in label_positions
-        ]
+        # Province/region name labels directly on the map.
+        # Slightly larger and hand-positioned to keep the northern
+        # region names clearly separated.
+        label_lons = []
+        label_lats = []
+        label_text = []
+
+        for p in province_names:
+            if p in label_positions:
+                label_lons.append(label_positions[p]["lon"])
+                label_lats.append(label_positions[p]["lat"])
+
+                if p == "Azad Kashmir":
+                    label_text.append("Azad Jammu &<br>Kashmir")
+                elif p == "Gilgit-Baltistan":
+                    label_text.append("Gilgit-<br>Baltistan")
+                else:
+                    label_text.append(p)
+
         fig_overview.add_trace(go.Scattergeo(
             lon=label_lons,
             lat=label_lats,
             mode="text",
             text=label_text,
-            textfont=dict(size=11, color="#0f172a", family="-apple-system, Segoe UI, sans-serif"),
+            textfont=dict(
+                size=13,
+                color="#0f172a",
+                family="-apple-system, Segoe UI, sans-serif"
+            ),
             showlegend=False,
             hoverinfo="skip"
         ))
