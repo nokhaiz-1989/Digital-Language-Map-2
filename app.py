@@ -278,9 +278,9 @@ def load_overview_regions_geojson():
 
 @st.cache_data
 def load_province_population():
-    """Load 2017 census population totals (with sex breakdown) per province."""
+    """Load 2023 census population totals (with sex breakdown) per province."""
     base_path = os.path.dirname(__file__)
-    pop_file = os.path.join(base_path, "data", "province_population_2017.json")
+    pop_file = os.path.join(base_path, "data", "province_population_2023.json")
 
     if not os.path.exists(pop_file):
         return None
@@ -350,9 +350,9 @@ def load_districts_geojson():
 
 @st.cache_data
 def load_census_divisions():
-    """Load 2017 PBS census mother-tongue data at division level."""
+    """Load 2023 PBS census mother-tongue data at province level."""
     base_path = os.path.dirname(__file__)
-    census_file = os.path.join(base_path, "data", "census_divisions_2017.csv")
+    census_file = os.path.join(base_path, "data", "census_provinces_2023.csv")
 
     if not os.path.exists(census_file):
         return None
@@ -362,15 +362,160 @@ def load_census_divisions():
 
 @st.cache_data
 def load_national_census():
-    """Load 2017 PBS national mother-tongue percentages."""
+    """Load 2023 PBS national mother-tongue percentages."""
     base_path = os.path.dirname(__file__)
-    national_file = os.path.join(base_path, "data", "national_census_2017.json")
+    national_file = os.path.join(base_path, "data", "national_census_2023.json")
 
     if not os.path.exists(national_file):
         return None
 
     with open(national_file, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+@st.cache_data
+def load_poet_profiles():
+    """Load deep biographical profiles (names, lineage, travel route, poetry,
+    miracles, teachings, etc.) for cultural figures that have one. Not every
+    entry in cultural_sites.csv needs a profile here — this is optional,
+    richer detail for whichever ones have been researched."""
+    base_path = os.path.dirname(__file__)
+    profiles_file = os.path.join(base_path, "data", "poet_profiles.json")
+
+    if not os.path.exists(profiles_file):
+        return {}
+
+    with open(profiles_file, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def curved_line_points(p1, p2, n=30, curvature=0.15):
+    """Generate points along a gentle quadratic-bezier arc between two
+    (lat, lon) points, so travel routes read as curved paths rather than
+    straight segments."""
+    lat1, lon1 = p1
+    lat2, lon2 = p2
+    dx = lon2 - lon1
+    dy = lat2 - lat1
+    dist = (dx ** 2 + dy ** 2) ** 0.5
+    if dist == 0:
+        return [p1, p2]
+
+    mid_lat = (lat1 + lat2) / 2
+    mid_lon = (lon1 + lon2) / 2
+    control_lat = mid_lat + (-dx / dist) * dist * curvature
+    control_lon = mid_lon + (dy / dist) * dist * curvature
+
+    points = []
+    for i in range(n + 1):
+        t = i / n
+        lat = (1 - t) ** 2 * lat1 + 2 * (1 - t) * t * control_lat + t ** 2 * lat2
+        lon = (1 - t) ** 2 * lon1 + 2 * (1 - t) * t * control_lon + t ** 2 * lon2
+        points.append((lat, lon))
+    return points
+
+
+def render_poet_profile(profile, poet_name):
+    """Render the full biographical detail panel for a selected cultural
+    figure using native Streamlit components (expanders), since this content
+    is far too long to comfortably fit in a map popup."""
+
+    st.markdown(f"#### Detailed Profile — {poet_name}")
+
+    if profile.get("real_names"):
+        with st.expander("Names & Titles", expanded=True):
+            st.markdown("**Real Name(s):**")
+            for name in profile["real_names"]:
+                st.markdown(f"- {name}")
+            if profile.get("known_as"):
+                st.markdown("**Known As:**")
+                for item in profile["known_as"]:
+                    st.markdown(f"- **{item['title']}** — {item['meaning']}")
+
+    if profile.get("family_tree"):
+        with st.expander("Family Lineage"):
+            if profile.get("lineage_note"):
+                st.markdown(profile["lineage_note"])
+            st.markdown(" → ".join(profile["family_tree"]))
+
+    if profile.get("birth"):
+        with st.expander("Birth"):
+            b = profile["birth"]
+            st.markdown(f"**Year:** {b.get('year', '—')}")
+            st.markdown(f"**Place:** {b.get('place', '—')}")
+            st.markdown(f"**Parents:** {b.get('parents', '—')}")
+            if b.get("note"):
+                st.caption(b["note"])
+
+    if profile.get("education"):
+        with st.expander("Education"):
+            for item in profile["education"]:
+                st.markdown(f"- {item}")
+
+    if profile.get("movement"):
+        with st.expander("Movement & Pilgrimage", expanded=True):
+            m = profile["movement"]
+            if m.get("summary"):
+                st.markdown(m["summary"])
+            if m.get("route_note"):
+                st.markdown(m["route_note"])
+            if m.get("preaching_note"):
+                st.markdown(m["preaching_note"])
+            if profile.get("travel_route"):
+                st.caption(
+                    "The dashed route on the map above traces this journey — "
+                    + " → ".join(wp["place"] for wp in profile["travel_route"])
+                )
+
+    if profile.get("cultural_layer"):
+        with st.expander("Cultural Layer — Urs Festival"):
+            c = profile["cultural_layer"]
+            st.markdown(f"**Festival:** {c.get('festival', '—')}")
+            st.markdown(f"**Date:** {c.get('date', '—')}")
+            st.markdown(f"**Place:** {c.get('place', '—')}")
+
+    if profile.get("poetry"):
+        with st.expander("Poetry"):
+            p = profile["poetry"]
+            if p.get("languages"):
+                st.markdown(f"**Languages:** {', '.join(p['languages'])}")
+            if p.get("themes"):
+                st.markdown(f"**Themes:** {p['themes']}")
+            if p.get("musical_traditions"):
+                st.markdown(f"**Musical Traditions:** {p['musical_traditions']}")
+            if p.get("famous_verse"):
+                v = p["famous_verse"]
+                st.markdown("**Famous Verse:**")
+                st.markdown(
+                    f"<div style='background-color:#f8fafc; border-left:3px solid #7c3aed; "
+                    f"padding:10px 14px; border-radius:6px; margin:8px 0;'>"
+                    f"<em>{v.get('original', '').replace(chr(10), '<br>')}</em><br><br>"
+                    f"{v.get('translation', '').replace(chr(10), '<br>')}"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            if p.get("reference_link"):
+                st.caption(f"Reference: {p['reference_link']}")
+
+    if profile.get("historical_layer"):
+        with st.expander("Historical Context"):
+            h = profile["historical_layer"]
+            if h.get("political_context"):
+                st.markdown(f"**Political Context:** {h['political_context']}")
+            if h.get("spiritual_orders"):
+                st.markdown(f"**Spiritual Orders:** {h['spiritual_orders']}")
+            if h.get("influence"):
+                st.markdown(f"**Influence:** {h['influence']}")
+
+    if profile.get("miracles"):
+        with st.expander("Miracles"):
+            for item in profile["miracles"]:
+                st.markdown(f"- {item}")
+
+    if profile.get("teachings"):
+        with st.expander("Teachings"):
+            for item in profile["teachings"]:
+                st.markdown(f"- {item}")
 
 
 # Maps a language name as it appears in languages.csv to the matching
@@ -578,7 +723,7 @@ if current_page == "Overview":
     st.subheader("Pakistan at a Glance")
     st.caption(
         "An overview of Pakistan's provinces, population, and linguistic diversity "
-        "based on the 2017 Census of Pakistan."
+        "based on the 2023 Census of Pakistan."
     )
 
     provinces_6_geojson = load_overview_regions_geojson()
@@ -588,7 +733,7 @@ if current_page == "Overview":
     if provinces_6_geojson is None or province_population is None:
         st.info(
             "Region summary files not found. Add `data/pakistan_6_provinces.geojson` "
-            "and `data/province_population_2017.json` to your repo to enable this view."
+            "and `data/province_population_2023.json` to your repo to enable this view."
         )
     else:
         province_names = [f["properties"]["Province"] for f in provinces_6_geojson["features"]]
@@ -676,7 +821,7 @@ if current_page == "Overview":
                 )
 
         st.caption(
-            "Source: Pakistan Bureau of Statistics — 6th Population & Housing Census 2017 (final results). "
+            "Source: Pakistan Bureau of Statistics, Population & Housing Census 2023 (Key Findings Report). "
             f"Language count reflects the {total_languages} languages catalogued in this atlas; "
             "Pakistan's total documented languages are commonly estimated at 70–80."
         )
@@ -713,12 +858,14 @@ if current_page == "Overview":
             }
         )
         st.caption(
-            "Men/Women/Transgender for Azad Jammu & Kashmir are not shown — that figure comes from the "
-            "AJK Bureau of Statistics' separate 2017 census, which was not broken down by sex in the "
-            "source used here. Khyber Pakhtunkhwa includes the former FATA, merged into KP in 2018. "
-            "Percentages are of the five regions shown in this table. Gilgit-Baltistan is shown on the "
-            "map above for a complete picture of the country, but isn't included in this table since a "
-            "harmonized population figure for it wasn't available in the sources used here."
+            "Men/Women for Azad Jammu & Kashmir come from the AJ&K Bureau of Statistics' own "
+            "2023 census figures (published in \"AJK At a Glance 2025\"), conducted separately "
+            "from the Pakistan Bureau of Statistics' national count — its Transgender figure "
+            "wasn't broken out separately in that source. Khyber Pakhtunkhwa includes the former "
+            "FATA, merged into KP in 2018. Percentages are of the five regions shown in this "
+            "table. Gilgit-Baltistan is shown on the map above for a complete picture of the "
+            "country, but isn't included in this table since a harmonized population figure "
+            "for it wasn't available in the sources used here."
         )
 
         st.markdown(
@@ -810,22 +957,33 @@ if current_page == "Provinces":
 
 if current_page == "Districts":
 
-    st.subheader("District Map — Official 2017 Census")
+    st.subheader("District Map — Official 2023 Census")
     st.caption(
-        "Pakistan Bureau of Statistics 2017 census, mother-tongue data by administrative "
-        "division. This is the finest resolution PBS publicly released for language — "
-        "so districts belonging to the same division share one color. Hover any district "
-        "to see its name, division, and exact percentage. "
+        "Pakistan Bureau of Statistics Census 2023, mother-tongue data by province. "
+        "This is the resolution published in the 2023 Key Findings Report — all districts "
+        "within the same province share one color. Hover any district "
+        "to see its name, province, and exact percentage. "
         "Azad Kashmir and Gilgit-Baltistan aren't part of this dataset."
     )
 
     districts_geojson = load_districts_geojson()
-    census_divisions = load_census_divisions()
+    census_provinces = load_census_divisions()
 
-    if districts_geojson is None or census_divisions is None:
+    # The district boundary file uses older province-name spellings; map them
+    # to the names used in the 2023 census data.
+    PROVINCE_NAME_ALIASES = {
+        "Baluchistan": "Balochistan",
+        "N.W.F.P.": "Khyber Pakhtunkhwa",
+        "Sind": "Sindh",
+        "F.C.T.": "Islamabad",
+        "F.A.T.A.": "Khyber Pakhtunkhwa",  # merged into KP in 2018
+        "Punjab": "Punjab",
+    }
+
+    if districts_geojson is None or census_provinces is None:
         st.info(
             "District boundary or census data file not found. Add "
-            "`data/pakistan_districts.geojson` and `data/census_divisions_2017.csv` "
+            "`data/pakistan_districts.geojson` and `data/census_provinces_2023.csv` "
             "to your repo to enable this view."
         )
     else:
@@ -833,7 +991,7 @@ if current_page == "Districts":
 
         with census_col:
             selected_census_lang = st.selectbox(
-                "Language (2017 Census)",
+                "Language (2023 Census)",
                 list(CENSUS_LANG_LABELS.values()),
                 index=0,
                 key="district_lang_select"
@@ -853,12 +1011,13 @@ if current_page == "Districts":
         district_rows = []
         for feat in districts_geojson["features"]:
             props = feat["properties"]
-            division = props["Division"]
-            match = census_divisions[census_divisions["Division"] == division]
+            raw_province = props["Province"]
+            mapped_province = PROVINCE_NAME_ALIASES.get(raw_province, raw_province)
+            match = census_provinces[census_provinces["Province"] == mapped_province]
             pct = float(match.iloc[0][pct_col]) if len(match) > 0 else None
             district_rows.append({
                 "District": props["District"],
-                "Division": division,
+                "Province": mapped_province,
                 "Percentage": pct
             })
 
@@ -876,7 +1035,7 @@ if current_page == "Districts":
         if search_district != "— none —":
             row = district_df[district_df["District"] == search_district].iloc[0]
             pct_display = f"{row['Percentage']:.2f}%" if pd.notna(row["Percentage"]) else "No data"
-            st.info(f"**{search_district}** (Division: {row['Division']}) — {selected_census_lang}: {pct_display}")
+            st.info(f"**{search_district}** (Province: {row['Province']}) — {selected_census_lang}: {pct_display}")
 
         fig_district = px.choropleth(
             district_df,
@@ -888,7 +1047,7 @@ if current_page == "Districts":
             range_color=[0, max(max_pct, 1)],
             template="plotly_white",
             hover_name="District",
-            hover_data={"Division": True, "Percentage_display": ":.2f"}
+            hover_data={"Province": True, "Percentage_display": ":.2f"}
         )
         fig_district.update_traces(marker_line_color="#94a3b8", marker_line_width=0.6)
         fig_district.update_geos(fitbounds="locations", visible=False)
@@ -906,14 +1065,14 @@ if current_page == "Districts":
 
 if current_page == "Mother Tongue Speakers":
 
-    st.subheader("Mother Tongue Speakers — 2017 Census")
+    st.subheader("Mother Tongue Speakers — 2023 Census")
     st.caption(
         "Pick a language for its official national numbers, ranked against every other "
         "census-tracked language."
     )
 
     if national_census is None:
-        st.info("Census data file not found. Add `data/national_census_2017.json` to your repo to enable this view.")
+        st.info("Census data file not found. Add `data/national_census_2023.json` to your repo to enable this view.")
     else:
         selected_speaker_lang = st.selectbox(
             "Language",
@@ -1003,7 +1162,7 @@ if current_page == "All Languages":
         if national_census and census_col:
             pct = national_census["languages"].get(census_col, {}).get("pct")
             if pct is not None:
-                census_line = f"<b>2017 Census:</b> {pct}% of Pakistan's population<br>"
+                census_line = f"<b>2023 Census:</b> {pct}% of Pakistan's population<br>"
 
         popup = f"""
         <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; min-width:220px;">
@@ -1167,8 +1326,15 @@ if current_page == "Cultural Map":
     st.subheader("Cultural Map of Pakistan")
     st.caption(
         "Historical Sufi poets today, with room to grow — future updates can add "
-        "shrines, festivals, forts, and other cultural sites as new categories."
+        "shrines, festivals, forts, and other cultural sites as new categories. "
+        "Click a marker to see its travel route (where documented) and full "
+        "biographical profile below the map."
     )
+
+    poet_profiles = load_poet_profiles()
+
+    if "selected_cultural_figure" not in st.session_state:
+        st.session_state.selected_cultural_figure = None
 
     poet_map = folium.Map(
         location=[30.3753, 69.3451],
@@ -1192,11 +1358,17 @@ if current_page == "Cultural Map":
         marker_color = culture_colors.get(category, "#7c3aed")
         image_url = row.get("Image_URL", "") if "Image_URL" in poets.columns else ""
         has_image = isinstance(image_url, str) and image_url.strip() != ""
+        has_profile = row["Name"] in poet_profiles
 
         image_html = (
             f'<img src="{image_url}" style="width:100%; max-height:160px; object-fit:cover; '
             f'border-radius:8px; margin-bottom:8px;">'
             if has_image else ""
+        )
+        profile_hint = (
+            '<p style="margin-top:6px; color:#7c3aed; font-size:12px; font-weight:600;">'
+            "Full profile + travel route available below the map</p>"
+            if has_profile else ""
         )
 
         popup = f"""
@@ -1210,6 +1382,7 @@ if current_page == "Cultural Map":
             <b>Sufi Order:</b> {row['Sufi_Order']}<br>
             <b>Famous Work:</b> {row['Famous_Work']}<br><br>
             <span style="color:#475569;">{row['Description']}</span>
+            {profile_hint}
         </div>
         """
 
@@ -1240,9 +1413,57 @@ if current_page == "Cultural Map":
             ).add_to(poet_group)
 
     poet_group.add_to(poet_map)
+
+    # If the currently-selected figure has a documented travel route, draw it
+    # as a dashed curved line connecting each waypoint in order.
+    selected_name = st.session_state.selected_cultural_figure
+    if selected_name and selected_name in poet_profiles:
+        route = poet_profiles[selected_name].get("travel_route", [])
+        if len(route) >= 2:
+            route_group = folium.FeatureGroup(name=f"{selected_name} — Travel Route")
+
+            for i in range(len(route) - 1):
+                p1 = (route[i]["lat"], route[i]["lon"])
+                p2 = (route[i + 1]["lat"], route[i + 1]["lon"])
+                arc = curved_line_points(p1, p2)
+                folium.PolyLine(
+                    arc,
+                    color="#7c3aed",
+                    weight=2.5,
+                    opacity=0.75,
+                    dash_array="6,8"
+                ).add_to(route_group)
+
+            for wp in route:
+                folium.CircleMarker(
+                    location=[wp["lat"], wp["lon"]],
+                    radius=4,
+                    color="#7c3aed",
+                    fill=True,
+                    fill_color="#ffffff",
+                    fill_opacity=1,
+                    weight=2,
+                    tooltip=wp["place"]
+                ).add_to(route_group)
+
+            route_group.add_to(poet_map)
+
     folium.LayerControl(collapsed=False).add_to(poet_map)
 
-    st_folium(poet_map, width=1200, height=600, key="poet_map")
+    map_data = st_folium(poet_map, width=1200, height=600, key="poet_map")
+
+    # Match a click to the nearest cultural-site marker (within a small
+    # tolerance) so we know which figure to show the full profile for.
+    if map_data and map_data.get("last_object_clicked"):
+        clicked = map_data["last_object_clicked"]
+        clicked_lat, clicked_lon = clicked.get("lat"), clicked.get("lng")
+        if clicked_lat is not None and clicked_lon is not None:
+            distances = ((poets["Latitude"] - clicked_lat) ** 2 + (poets["Longitude"] - clicked_lon) ** 2) ** 0.5
+            if len(distances) > 0 and distances.min() < 0.05:
+                matched_name = poets.loc[distances.idxmin(), "Name"]
+                if matched_name != st.session_state.selected_cultural_figure:
+                    st.session_state.selected_cultural_figure = matched_name
+                    st.rerun()
 
     # --- Legend ---
     legend_items_html = "".join(
@@ -1270,6 +1491,25 @@ if current_page == "Cultural Map":
         "Markers show as a colored circle by default, or a circular photo when an "
         "Image_URL is provided in `data/cultural_sites.csv`."
     )
+
+    # --- Detailed profile panel (only for figures with a researched profile) ---
+    st.divider()
+    if selected_name and selected_name in poet_profiles:
+        render_poet_profile(poet_profiles[selected_name], selected_name)
+        if st.button("Clear selection"):
+            st.session_state.selected_cultural_figure = None
+            st.rerun()
+    elif selected_name:
+        st.info(
+            f"**{selected_name}** doesn't have a detailed profile yet — only the ones "
+            "researched in depth (starting with Lal Shahbaz Qalandar) show a full "
+            "biography and travel route. Add more to `data/poet_profiles.json` to expand this."
+        )
+    else:
+        st.caption(
+            "Click a marker on the map above to see its detailed biographical profile here "
+            "(currently available for Lal Shahbaz Qalandar — more can be added)."
+        )
 
     # --- Cultural site statistics ---
     st.divider()
