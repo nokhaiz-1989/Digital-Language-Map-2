@@ -1,0 +1,54 @@
+{
+  "national_total": {
+    "Total": 241499431,
+    "Male": 124324406,
+    "Female": 117154694,
+    "Transgender": 20331
+  },
+  "islamabad": {
+    "Total": 2363863,
+    "Male": 1247693,
+    "Female": 1115900,
+    "Transgender": 270
+  },
+  "provinces": {
+    "Punjab": {
+      "Total": 127688922,
+      "Male": 65448376,
+      "Female": 62226589,
+      "Transgender": 13957,
+      "Percentage": 52.45
+    },
+    "Sindh": {
+      "Total": 55696147,
+      "Male": 29014424,
+      "Female": 26677501,
+      "Transgender": 4222,
+      "Percentage": 22.88
+    },
+    "Khyber Pakhtunkhwa": {
+      "Total": 40856097,
+      "Male": 20845747,
+      "Female": 20009233,
+      "Transgender": 1117,
+      "Percentage": 16.78
+    },
+    "Balochistan": {
+      "Total": 14894402,
+      "Male": 7768166,
+      "Female": 7125471,
+      "Transgender": 765,
+      "Percentage": 6.12
+    },
+    "Azad Jammu & Kashmir": {
+      "Total": 4333467,
+      "Male": 2155334,
+      "Female": 2177998,
+      "Transgender": null,
+      "source": "AJ&K Bureau of Statistics, Census 2023 (\"AJK At a Glance 2025\")",
+      "Percentage": 1.78
+    }
+  },
+  "table_total": 243469035,
+  "source_note": "Pakistan Bureau of Statistics, Census 2023 (Key Findings Report) for the four provinces and Islamabad; Azad Jammu & Kashmir figure from AJ&K Bureau of Statistics, Census 2023 (published in \"AJK At a Glance 2025\"), conducted separately from the PBS national count. Khyber Pakhtunkhwa includes the former FATA, merged into KP in 2018."
+}
