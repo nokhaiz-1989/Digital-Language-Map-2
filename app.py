@@ -115,21 +115,23 @@ st.markdown(
         margin-bottom: 6px;
     }
     .stat-card .stat-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #64748b;
-        margin-bottom: 4px;
-    }
-    .stat-card .stat-value {
-        font-size: 22px;
-        font-weight: 800;
-        color: #0f172a;
-    }
-    .stat-card .stat-sub {
-        font-size: 12px;
-        font-weight: 700;
-        margin-top: 2px;
-    }
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+.stat-card .stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    white-space: nowrap;
+}
+.stat-card .stat-sub {
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 2px;
+}
 
     /* Overview info callout */
     .info-callout {
