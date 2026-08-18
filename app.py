@@ -391,6 +391,22 @@ def load_poet_profiles():
         return json.load(f)
 
 
+@st.cache_data
+def load_sufi_language_arcs():
+    """Load language-influence arcs per Sufi (data/sufi_language_arcs.json).
+    Each entry is keyed by the Sufi's exact Name as it appears in
+    cultural_sites.csv, and maps to a list of {language, color, points}
+    dicts — one per language connected to that figure."""
+    base_path = os.path.dirname(__file__)
+    arcs_file = os.path.join(base_path, "data", "sufi_language_arcs.json")
+
+    if not os.path.exists(arcs_file):
+        return {}
+
+    with open(arcs_file, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def curved_line_points(p1, p2, n=30, curvature=0.15):
     """Generate points along a gentle quadratic-bezier arc between two
     (lat, lon) points, so travel routes read as curved paths rather than
@@ -480,7 +496,9 @@ def render_poet_profile(profile, poet_name):
         with st.expander("Poetry"):
             p = profile["poetry"]
             if p.get("languages"):
-                st.markdown(f"**Languages:** {', '.join(p['languages'])}")
+                langs = p["languages"]
+                langs_display = ", ".join(langs) if isinstance(langs, list) else langs
+                st.markdown(f"**Languages:** {langs_display}")
             if p.get("themes"):
                 st.markdown(f"**Themes:** {p['themes']}")
             if p.get("musical_traditions"):
@@ -1344,7 +1362,7 @@ if current_page == "Cultural Map":
     st.caption(
         "Historical Sufi poets today, with room to grow — future updates can add "
         "shrines, festivals, forts, and other cultural sites as new categories. "
-        "Click a marker to see its travel route (where documented) and full "
+        "Click a marker to see its language-influence arcs (where documented) and full "
         "biographical profile below the map."
     )
 
@@ -1384,7 +1402,7 @@ if current_page == "Cultural Map":
         )
         profile_hint = (
             '<p style="margin-top:6px; color:#7c3aed; font-size:12px; font-weight:600;">'
-            "Full profile + travel route available below the map</p>"
+            "Full profile + language arcs available below the map</p>"
             if has_profile else ""
         )
 
@@ -1431,39 +1449,22 @@ if current_page == "Cultural Map":
 
     poet_group.add_to(poet_map)
 
-    # If the currently-selected figure has a documented travel route, draw it
-    # as a dashed curved line connecting each waypoint in order.
+    # If the currently-selected figure has language-influence arcs, draw them
+    # as dashed lines from each language's origin to this Sufi's shrine.
+    sufi_arcs = load_sufi_language_arcs()
     selected_name = st.session_state.selected_cultural_figure
-    if selected_name and selected_name in poet_profiles:
-        route = poet_profiles[selected_name].get("travel_route", [])
-        if len(route) >= 2:
-            route_group = folium.FeatureGroup(name=f"{selected_name} — Travel Route")
-
-            for i in range(len(route) - 1):
-                p1 = (route[i]["lat"], route[i]["lon"])
-                p2 = (route[i + 1]["lat"], route[i + 1]["lon"])
-                arc = curved_line_points(p1, p2)
-                folium.PolyLine(
-                    arc,
-                    color="#7c3aed",
-                    weight=2.5,
-                    opacity=0.75,
-                    dash_array="6,8"
-                ).add_to(route_group)
-
-            for wp in route:
-                folium.CircleMarker(
-                    location=[wp["lat"], wp["lon"]],
-                    radius=4,
-                    color="#7c3aed",
-                    fill=True,
-                    fill_color="#ffffff",
-                    fill_opacity=1,
-                    weight=2,
-                    tooltip=wp["place"]
-                ).add_to(route_group)
-
-            route_group.add_to(poet_map)
+    if selected_name and selected_name in sufi_arcs:
+        arc_group = folium.FeatureGroup(name=f"{selected_name} — Language Arcs")
+        for arc in sufi_arcs[selected_name]:
+            folium.PolyLine(
+                arc["points"],
+                color=arc["color"],
+                weight=2.5,
+                opacity=0.85,
+                dash_array="6,8",
+                tooltip=arc["language"]
+            ).add_to(arc_group)
+        arc_group.add_to(poet_map)
 
     folium.LayerControl(collapsed=False).add_to(poet_map)
 
@@ -1519,13 +1520,13 @@ if current_page == "Cultural Map":
     elif selected_name:
         st.info(
             f"**{selected_name}** doesn't have a detailed profile yet — only the ones "
-            "researched in depth (starting with Lal Shahbaz Qalandar) show a full "
-            "biography and travel route. Add more to `data/poet_profiles.json` to expand this."
+            "researched in depth show a full biography and language arcs. Add more to "
+            "`data/poet_profiles.json` to expand this."
         )
     else:
         st.caption(
-            "Click a marker on the map above to see its detailed biographical profile here "
-            "(currently available for Lal Shahbaz Qalandar — more can be added)."
+            "Click a marker on the map above to see its detailed biographical profile "
+            "and language-influence arcs here."
         )
 
     # --- Cultural site statistics ---
