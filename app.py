@@ -1510,7 +1510,9 @@ if current_page == "Cultural Map":
         "Image_URL is provided in `data/cultural_sites.csv`."
     )
 
-    # --- Detailed profile panel (only for figures with a researched profile) ---
+    # --- Detailed profile panel (rich profile if researched, otherwise a
+    # basic panel built straight from cultural_sites.csv so no figure is
+    # ever left with just a dead-end message) ---
     st.divider()
     if selected_name and selected_name in poet_profiles:
         render_poet_profile(poet_profiles[selected_name], selected_name)
@@ -1518,11 +1520,25 @@ if current_page == "Cultural Map":
             st.session_state.selected_cultural_figure = None
             st.rerun()
     elif selected_name:
-        st.info(
-            f"**{selected_name}** doesn't have a detailed profile yet — only the ones "
-            "researched in depth show a full biography and language arcs. Add more to "
-            "`data/poet_profiles.json` to expand this."
-        )
+        row_match = poets[poets["Name"] == selected_name]
+        if len(row_match) > 0:
+            row = row_match.iloc[0]
+            st.markdown(f"#### {selected_name}")
+            st.markdown(f"**Period:** {row['Birth']} – {row['Death']}")
+            st.markdown(f"**Region:** {row['Region']}")
+            if pd.notna(row.get("Sufi_Order")) and str(row.get("Sufi_Order")).strip():
+                st.markdown(f"**Sufi Order:** {row['Sufi_Order']}")
+            if pd.notna(row.get("Famous_Work")) and str(row.get("Famous_Work")).strip():
+                st.markdown(f"**Famous Work:** {row['Famous_Work']}")
+            if pd.notna(row.get("Description")) and str(row.get("Description")).strip():
+                st.markdown(row["Description"])
+            st.caption(
+                "A deeper researched profile isn't available yet for this figure — "
+                "add one to `data/poet_profiles.json` to expand it."
+            )
+        if st.button("Clear selection"):
+            st.session_state.selected_cultural_figure = None
+            st.rerun()
     else:
         st.caption(
             "Click a marker on the map above to see its detailed biographical profile "
