@@ -54,3 +54,20 @@ Sarikoli,Endangered,Iranian,Gilgit Baltistan,Northern Hunza,36.9,74.8,2000,Perso
 Domaaki,Endangered,Indo-Aryan,Gilgit Baltistan,Hunza,36.32,74.67,500,Perso-Arabic,Severely Endangered,Critically small language spoken by the Doma community in Hunza
 Kashmiri,Regional,Indo-Aryan,Azad Kashmir,Neelum Valley,34.65,73.92,130000,Perso-Arabic (Nastaliq),Vulnerable,Dardic-related language of Kashmir valley communities
 Kundal Shahi,Endangered,Indo-Aryan,Azad Kashmir,Neelum Valley,34.6,73.85,500,Perso-Arabic,Critically Endangered,Critically endangered language spoken in a single village of Neelum Valley
+Language,Category,Family,Province,Region,Latitude,Longitude,Speakers,Script,Endangerment_Status,Description
+Badeshi,Endangered,Iranian,Khyber Pakhtunkhwa,"Chail Valley, Battagram",34.68,73.02,2000,Perso-Arabic,Critically Endangered,"Nearly extinct language of the Chail Valley near Battagram; APPROX coordinates, verify"
+Bhaya,Endangered,Indo-Aryan,Sindh,Interior Sindh,26.0,68.3,5000,Perso-Arabic,Severely Endangered,"Little-documented Indo-Aryan language of interior Sindh; APPROX coordinates, verify"
+English,National,Germanic,All Pakistan,Federal co-official language,33.6844,73.0479,0,Latin,Safe,"Federal co-official language used in government, courts, and education; speaker count reflects L2 use, not a native community"
+Ghera,Endangered,Indo-Aryan,Sindh,Sindh,25.9,69.0,5000,Perso-Arabic,Severely Endangered,"Minority Indo-Aryan language of Sindh, limited documentation; APPROX coordinates, verify"
+Goaria,Endangered,Indo-Aryan,Sindh,Sindh,25.8,68.7,5000,Perso-Arabic,Severely Endangered,"Minority Indo-Aryan language spoken by an itinerant Sindh community; APPROX coordinates, verify"
+Gurgula,Endangered,Indo-Aryan,Sindh,Sindh,25.5,69.3,3000,Perso-Arabic,Critically Endangered,"Very small Indo-Aryan language of Sindh, sparsely documented; APPROX coordinates, verify"
+Haryanvi (Rangri),Endangered,Indo-Aryan,Punjab and Sindh,Cholistan/Thar border,28.5,70.9,10000,Perso-Arabic,Severely Endangered,"Rajasthani-related language also known as Rangri, spoken along the Punjab-Sindh desert border; APPROX coordinates, verify"
+Jandavra,Endangered,Indo-Aryan,Sindh,Sindh,25.7,68.8,4000,Perso-Arabic,Critically Endangered,"Minority Indo-Aryan language of Sindh; APPROX coordinates, verify"
+Kabutra,Endangered,Indo-Aryan,Sindh,Sindh,25.4,69.1,3000,Perso-Arabic,Critically Endangered,"Spoken by the nomadic Kabutra community of Sindh; APPROX coordinates, verify"
+"Koli, Kachi",Endangered,Indo-Aryan,Sindh,Kachho region,26.5,67.9,50000,Perso-Arabic,Vulnerable,"One of three Koli varieties spoken in Sindh; APPROX coordinates, verify"
+"Koli, Parkari",Endangered,Indo-Aryan,Sindh,Tharparkar,24.75,70.1,200000,Devanagari,Vulnerable,"Koli variety spoken in Tharparkar, related to Dhatki; APPROX coordinates, verify"
+"Koli, Wadiyari",Endangered,Indo-Aryan,Sindh,Badin/lower Sindh,24.9,68.9,50000,Perso-Arabic,Vulnerable,"Koli variety spoken in lower Sindh; APPROX coordinates, verify"
+Mankiyali,Endangered,Indo-Aryan,Khyber Pakhtunkhwa,"Kaghan Valley, Mansehra",34.75,73.4,700,Perso-Arabic,Critically Endangered,"Critically small Indo-Aryan language of the Kaghan Valley; APPROX coordinates, verify"
+Oadki,Endangered,Indo-Aryan,Punjab and Sindh,Bahawalpur/Sindh border,29.5,71.5,3000,Perso-Arabic,Severely Endangered,"Language of the itinerant Od community; APPROX coordinates, verify"
+Pakistan Sign Language,National,Indo-Pakistani Sign Language,All Pakistan,Nationwide Deaf community,33.6844,73.0479,250000,Visual-gestural (unwritten),Vulnerable,"Primary sign language of Pakistan's Deaf community, used nationwide"
+Savi,Endangered,Indo-Aryan,Khyber Pakhtunkhwa,"Duber Valley, Kohistan",35.1,73.0,3000,Perso-Arabic,Critically Endangered,"Very small Indo-Aryan language of the Duber Valley in Kohistan; APPROX coordinates, verify"
