@@ -2,12 +2,8 @@ Language,Category,Family,Province,Region,Latitude,Longitude,Speakers,Script,Enda
 Urdu,National,Indo-Aryan,All Pakistan,National Language,30.3753,69.3451,70000000,Perso-Arabic,Safe,National lingua franca of Pakistan
 Punjabi,Regional,Indo-Aryan,Punjab,Punjab,31.5204,74.3587,80000000,Shahmukhi,Safe,Most widely spoken regional language of Pakistan
 Sindhi,Regional,Indo-Aryan,Sindh,Sindh,25.8943,68.5247,30000000,Sindhi-Arabic,Safe,Major language of Sindh with rich literary tradition
-Pashto,Regional,Iranian,Khyber Pakhtunkhwa,KP and Balochistan,34.0151,71.5249,35000000,Perso-Arabic,Safe,Major eastern Iranian language
 Saraiki,Regional,Indo-Aryan,Southern Punjab,Saraiki Belt,30.1575,71.5249,25000000,Shahmukhi,Vulnerable,Regional language of southern Punjab
-Balochi,Regional,Iranian,Balochistan,Balochistan,28.4907,65.0958,6000000,Perso-Arabic,Vulnerable,Western Iranian language spoken in Balochistan
 Brahui,Regional,Dravidian,Balochistan,Brahui Region,30.1798,66.975,3000000,Perso-Arabic,Vulnerable,Dravidian language surrounded by Iranian languages
-Hindko,Regional,Indo-Aryan,Khyber Pakhtunkhwa,Hazara Region,34.1495,73.1995,5000000,Shahmukhi,Vulnerable,Western Punjabi variety
-Shina,Endangered,Dardic,Gilgit Baltistan,Gilgit Valley,35.9208,74.308,1100000,Perso-Arabic,Vulnerable,Dardic language of northern Pakistan
 Burushaski,Endangered,Language Isolate,Gilgit Baltistan,Hunza and Nagar,36.3167,74.65,100000,Perso-Arabic,Vulnerable,Unique language isolate
 Ormuri,Endangered,Iranian,Khyber Pakhtunkhwa,Kanikur area,32.9,69.8,5000,Perso-Arabic,Severely Endangered,Eastern Iranian endangered language
 Kalasha,Endangered,Indo-Aryan,Khyber Pakhtunkhwa,Chitral Valleys,35.7,71.8,5000,Latin and Perso-Arabic,Critically Endangered,Ancient language of Kalash community
@@ -54,7 +50,6 @@ Sarikoli,Endangered,Iranian,Gilgit Baltistan,Northern Hunza,36.9,74.8,2000,Perso
 Domaaki,Endangered,Indo-Aryan,Gilgit Baltistan,Hunza,36.32,74.67,500,Perso-Arabic,Severely Endangered,Critically small language spoken by the Doma community in Hunza
 Kashmiri,Regional,Indo-Aryan,Azad Kashmir,Neelum Valley,34.65,73.92,130000,Perso-Arabic (Nastaliq),Vulnerable,Dardic-related language of Kashmir valley communities
 Kundal Shahi,Endangered,Indo-Aryan,Azad Kashmir,Neelum Valley,34.6,73.85,500,Perso-Arabic,Critically Endangered,Critically endangered language spoken in a single village of Neelum Valley
-Language,Category,Family,Province,Region,Latitude,Longitude,Speakers,Script,Endangerment_Status,Description
 Badeshi,Endangered,Iranian,Khyber Pakhtunkhwa,"Chail Valley, Battagram",34.68,73.02,2000,Perso-Arabic,Critically Endangered,"Nearly extinct language of the Chail Valley near Battagram; APPROX coordinates, verify"
 Bhaya,Endangered,Indo-Aryan,Sindh,Interior Sindh,26.0,68.3,5000,Perso-Arabic,Severely Endangered,"Little-documented Indo-Aryan language of interior Sindh; APPROX coordinates, verify"
 English,National,Germanic,All Pakistan,Federal co-official language,33.6844,73.0479,0,Latin,Safe,"Federal co-official language used in government, courts, and education; speaker count reflects L2 use, not a native community"
@@ -71,3 +66,13 @@ Mankiyali,Endangered,Indo-Aryan,Khyber Pakhtunkhwa,"Kaghan Valley, Mansehra",34.
 Oadki,Endangered,Indo-Aryan,Punjab and Sindh,Bahawalpur/Sindh border,29.5,71.5,3000,Perso-Arabic,Severely Endangered,"Language of the itinerant Od community; APPROX coordinates, verify"
 Pakistan Sign Language,National,Indo-Pakistani Sign Language,All Pakistan,Nationwide Deaf community,33.6844,73.0479,250000,Visual-gestural (unwritten),Vulnerable,"Primary sign language of Pakistan's Deaf community, used nationwide"
 Savi,Endangered,Indo-Aryan,Khyber Pakhtunkhwa,"Duber Valley, Kohistan",35.1,73.0,3000,Perso-Arabic,Critically Endangered,"Very small Indo-Aryan language of the Duber Valley in Kohistan; APPROX coordinates, verify"
+"Balochi, Makrani",Regional,Iranian,Balochistan,Makran coast,25.99,63.06,3100000,Perso-Arabic,Vulnerable,Southern Balochi dialect of the Makran coastal region
+"Balochi, Rakhshani",Regional,Iranian,Balochistan,Northern Balochistan,28.85,65.42,800000,Perso-Arabic,Vulnerable,Western Balochi dialect of northern Balochistan
+"Balochi, Sulaimani",Regional,Iranian,"Balochistan, Punjab, Sindh",Eastern Balochistan,29.90,69.25,2100000,Perso-Arabic,Vulnerable,"Eastern Balochi dialect spoken by Marri, Bugti and related tribes"
+"Pashto, Northern",Regional,Iranian,Khyber Pakhtunkhwa,"Peshawar valley, Swat, Malakand",34.0151,71.5249,20000000,Perso-Arabic,Safe,"Largest Pashto variety, spoken across central and northern Khyber Pakhtunkhwa"
+"Pashto, Central",Regional,Iranian,Khyber Pakhtunkhwa,"Waziristan, Bannu, Kurram",32.98,70.60,7000000,Perso-Arabic,Safe,Pashto variety of the tribal districts of Waziristan and Bannu
+"Pashto, Southern",Regional,Iranian,"Balochistan, Khyber Pakhtunkhwa, Punjab",Northern Balochistan,30.58,66.98,8000000,Perso-Arabic,Safe,Pashto variety of Quetta and northern Balochistan
+"Hindko, Northern",Regional,Indo-Aryan,Khyber Pakhtunkhwa,Hazara Division,34.1495,73.1995,3950000,Shahmukhi,Vulnerable,Hazara/Abbottabad-based Hindko dialect group
+"Hindko, Southern",Regional,Indo-Aryan,"Khyber Pakhtunkhwa, Punjab","Peshawar, Kohat, Attock",33.59,71.44,1050000,Shahmukhi,Vulnerable,Peshawari/Kohati Hindko dialect group
+Shina,Endangered,Dardic,Gilgit Baltistan,Gilgit Valley,35.9208,74.308,790000,Perso-Arabic,Vulnerable,Standard/Gilgit dialect of the Dardic Shina language
+"Shina, Kohistani",Endangered,Dardic,Khyber Pakhtunkhwa,Indus Kohistan,35.15,73.0,310000,Perso-Arabic,Definitely Endangered,"Kohistani dialect of Shina, spoken along the Indus"
