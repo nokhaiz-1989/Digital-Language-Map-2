@@ -15,7 +15,7 @@ import os
 
 st.set_page_config(
     page_title="Digital Language Map",
-    page_icon="🌐",
+    page_icon="🇵🇰",
     layout="wide"
 )
 
@@ -183,7 +183,7 @@ st.markdown(
 # TITLE
 # -------------------------------
 
-st.title("🌐 Digital Language Map")
+st.title("🇵🇰 Digital Language Map")
 
 
 # -------------------------------
