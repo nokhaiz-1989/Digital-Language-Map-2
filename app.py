@@ -15,16 +15,7 @@ import os
 
 st.set_page_config(
     page_title="Digital Language Map",
-    st.markdown(
-    """
-    <h1 style="display:flex; align-items:center; gap:12px;">
-        <img src="https://flagcdn.com/w40/pk.png" width="40">
-        Digital Language Map
-    </h1>
-    """,
-    unsafe_allow_html=True
-)
-    layout="wide"
+    page_icon="🇵🇰",    layout="wide"
 )
 
 
