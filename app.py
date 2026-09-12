@@ -832,12 +832,12 @@ if current_page == "Overview":
         total_languages = len(full_languages)
 
         stat_cards = [
-            ("👥", "Total Population", f"{national['Total']:,}", None, "#2563eb"),
-            ("👨", "Men", f"{national['Male']:,}", f"{male_pct}%", "#2563eb"),
-            ("👩", "Women", f"{national['Female']:,}", f"{female_pct}%", "#db2777"),
-            ("⚧", "Transgender", f"{national['Transgender']:,}", f"{trans_pct}%", "#16a34a"),
-            ("💬", "Total Languages Spoken", str(total_languages), None, "#0f172a"),
-        ]
+    ("", "Total Population", f"{national['Total']:,}", None, "#2563eb"),
+    ("", "Men", f"{national['Male']:,}", f"{male_pct}%", "#2563eb"),
+    ("", "Women", f"{national['Female']:,}", f"{female_pct}%", "#db2777"),
+    ("", "Transgender", f"{national['Transgender']:,}", f"{trans_pct}%", "#16a34a"),
+    ("", "Total Languages Spoken", str(total_languages), None, "#0f172a"),
+]
 
         cols = st.columns(5)
         for col, (icon, label, value, sub, color) in zip(cols, stat_cards):
